@@ -1,7 +1,7 @@
 #class gmcp kill;
 #CLASS {gmcp} OPEN
 
-#var logdir {/home/dragonfiredev/tt/aard/log};
+#var logdir {/path/to/your/folder/log};
 #var mapping {1};
 
 #format IAC  %a 255
@@ -98,21 +98,6 @@
 	#nop
 }
 
-#alias {afk {on|off}}
-{
-	#if {"%1" == "on"}
-	{
-		#var afk 1;
-		#var prewarning 0;
-	}
-	{
-		#var afk 0;
-		#var tellsent {};
-	}
-}
-
-
-
 #NOP EVENT {IAC SB GMCP comm.channel IAC SE}
 {
 	#var {GMCP[COMM][CHATLOGGER]} {%0};
@@ -125,20 +110,6 @@
 	#if {$debug}
 	{
 		#showme %1
-	};
-	#if {"$GMCP[COMM][CHATLOGGER][chan]" == "tell"}
-	{
-		#if {$afk}
-		{
-			#if {!$tellsent[$GMCP[COMM][CHATLOGGER][player]]}
-			{
-				#if {"$GMCP[COMM][CHATLOGGER][player]" != "Cheezburger"}
-				{
-					#var {tellsent[$GMCP[COMM][CHATLOGGER][player]]} {1};
-					reply Sorry, but I'm afk: @Y[@R$afk_reason@Y]@c;
-				}
-			}
-		}
 	};
 }
 
@@ -168,24 +139,6 @@
 	#var time {};
 	#nop;
 }
-
-#alias {^repopwatch {on|off}$}
-{
-	#if {"%1" == "on"}
-	{
-		#var repoptrack 1;
-	}
-	{
-		#var repoptrack 0;
-	}
-}
-
-#alias {^check repop$}
-{
-	#format curr_time {%T};
-	#math {time_till_pop} {($last_repop+606)-$curr_time};
-	#send {$repchan @CNext repop@w: @R$time_till_pop @Wseconds.};
-};
 
 #EVENT {IAC SB GMCP char.base IAC SE}
 {
@@ -243,18 +196,6 @@
 #var repop 0;
 #var ticks 30;
 #TICKER {mapupdate} {#map write {$logdir/map-all.tt}} {300};
-#NOP tic TICKING
-{
-    #if {$ticks > 0}
-    {
-        #math ticks {$ticks - 1};
-    };
-
-    #if {$ticks < 10}
-    {#show {<139>  $ticks<099> secs to tick     QUEST<099>: <139>$timer} {-4} {3}}
-    {#show {<139> $ticks<099> secs to tick     QUEST<099>: <139>$timer} {-4} {3}}
-}
-{1};
 #EVENT {IAC WILL GMCP}
 {
 	#send {$IAC$DO$GMCP\};
@@ -294,48 +235,15 @@
 
 #ACTION {^############# Reconnecting to Game #############$}
 {
-        #delay 2
-        {
-            slist spellup;
-            spup resume;
-            #NOP bug: For some reason have to do this twice?;
-            slist spellup;
-            #NOP Turn the tags on for them;
-            #NOP tags map on;
-            #NOP tags mapnames on;
-            #NOP tags mapexits on;
-            #NOP tags channels on;
-            #NOP tags roomchars on;
-            #NOP tags spellups on;
-        };
-        #nop protocol gmcp sendchar;
-        #NOP Put the Tintin map in the right room;
         #send {look}
 }
 
 #ACTION {^Welcome to Aardwolf. May your adventures be mystical, challenging and rewarding.}
 {
-        #delay 2
-        {
-            #NOP slist spellup;
-            #NOP spup resume;
-            #NOP bug: For some reason have to do this twice?;
-            #NOP slist spellup;
-            #NOP Turn the tags on for them;
-            #NOP tags map on;
-            #NOP tags mapnames on;
-            #NOP tags mapexits on;
-            #NOP tags channels on;
-            #NOP tags roomchars on;
-            #NOP tags spellups on;
-        };
-        #nop protocol gmcp sendchar;
-        #NOP Put the Tintin map in the right room;
         #send {look}
 }
 
 
-#NOP Extra stuff for gorgar
 #action {^\{roomchars\}}
 {
         #var getchar 1;

@@ -16,9 +16,9 @@
 #NOP /********************************************************************/;
 
 #NOP **** Database Connection Info ****;
-#VAR {dbSettings[user]} {aard};
-#VAR {dbSettings[pass]} {aard};
-#VAR {dbSettings[database]} {aard};
+#VAR {dbSettings[user]} {fill this in};
+#VAR {dbSettings[pass]} {fill this in};
+#VAR {dbSettings[database]} {fill this in};
 #VAR {dbSettings[server]} {127.0.0.1};
 
 #NOP **** Constants ****;

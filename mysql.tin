@@ -1,0 +1,73 @@
+#CLASS {cDBConnector} {kill};
+#CLASS {cDBConnector} {open};
+
+#NOP /********************************************************************/;
+#NOP /* Generic MySQL Database Connector                                 */;
+#NOP /* Taken from ancient example, reconfigured by Gorgar 1/21/23       */;
+#NOP /*                                                                  */;
+#NOP /* db_submit {returnvar}                                            */;
+#NOP /* {select * from tablename where fieldname = '%s'} {match text}    */;
+#NOP /*                                                                  */;
+#NOP /* $returnvar[recordnumber][fieldname]                              */;
+#NOP /*                                                                  */;
+#NOP /* E.G. to get the data from HP field of the first record returned: */;
+#NOP /* #VAR {varname} {$returnvar[1][HP]}                               */;
+#NOP /*                                                                  */;
+#NOP /********************************************************************/;
+
+#NOP **** Database Connection Info ****;
+#VAR {dbSettings[user]} {aard};
+#VAR {dbSettings[pass]} {aard};
+#VAR {dbSettings[database]} {aard};
+#VAR {dbSettings[server]} {127.0.0.1};
+
+#NOP **** Constants ****;
+#FORMAT {dbSettings[tab]} {%a} {9};
+
+#ALIAS {db_submit}
+{
+    #IF {"%0" != ""}
+    {
+        #VAR {db} {};
+
+        #NOP /* Start constructing #FORMAT command to construct full SQL query string */;
+        #VAR {dbFormat} {#FORMAT {db[Command]} {%2}};
+        #VAR {db[Count]} {0};
+
+        #NOP /* Parse parameters 3->n, remove quotes, and append to #FORMAT command string */;
+        #FOREACH {%0} {db[Temp]}
+        {
+            #MATH {db[Count]} {$db[Count] + 1};
+            #IF {$db[Count] > 2}
+            {
+                #REPLACE {db[Temp]} {"} {'};
+                #REPLACE {db[Temp]} {'} {''};
+                #IF {"$db[Temp]" != ""}
+                {
+
+                    #VAR {dbFormat} {${dbFormat}{${db[Temp]}}};
+                };
+            };
+        };
+
+        #NOP /* Perform built #FORMAT command to construct full SQL command in db[Command] */;
+        ${dbFormat};
+        
+        #NOP /* Send constructed SQL command to the database, collecting returned raw output (if any) into db[Return] */;
+
+        #NOP tintin seems to have trouble with % in the sql query which is needed for %LIKE% syntax;
+        #replace {db[Command]} {REPL} {%%};
+        #SCRIPT {db[return]} {MYSQL_PWD="$dbSettings[pass]" mysql -h${dbSettings[server]} -u${dbSettings[user]} -D${dbSettings[database]} -Be "${db[Command]}"};
+
+        #var {db_raw} {$db[return]};
+        
+        #IF {"%1" != ""}
+        {
+            #VAR {%1} {$db_raw};
+        };
+        #UNVAR {db};
+        #UNVAR {dbFormat};
+    };
+};
+
+#CLASS {cDBConnector} {close};
